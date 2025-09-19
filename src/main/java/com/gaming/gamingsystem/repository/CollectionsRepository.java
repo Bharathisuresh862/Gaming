@@ -6,6 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CollectionsRepository extends MongoRepository<Collections, String> {
-    // No custom queries for now
+    // custom queries can be added here
 }
-

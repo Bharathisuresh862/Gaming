@@ -1,8 +1,7 @@
 package com.gaming.gamingsystem.controllers;
 
 import com.gaming.gamingsystem.entities.Collections;
-import com.gaming.gamingsystem.repository.CollectionsRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.gaming.gamingsystem.services.CollectionsService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -11,45 +10,34 @@ import java.util.List;
 @RequestMapping("/collections")
 public class CollectionsController {
 
-    @Autowired
-    private CollectionsRepository collectionsRepo;
+    private final CollectionsService service;
 
-    // Create new collection record
-    @PostMapping
-    public Collections create(@RequestBody Collections collection) {
-        collection.setId(null); // let MongoDB generate _id
-        return collectionsRepo.save(collection);
+    public CollectionsController(CollectionsService service) {
+        this.service = service;
     }
 
-    // Get all records
+    @PostMapping
+    public Collections create(@RequestBody Collections entry) {
+        return service.create(entry);
+    }
+
     @GetMapping
     public List<Collections> getAll() {
-        return collectionsRepo.findAll();
+        return service.findAll();
     }
 
-    // Get by id
     @GetMapping("/{id}")
     public Collections getById(@PathVariable String id) {
-        return collectionsRepo.findById(id).orElse(null);
+        return service.findById(id);
     }
 
-    // Update existing record
     @PutMapping("/{id}")
     public Collections update(@PathVariable String id, @RequestBody Collections updated) {
-        return collectionsRepo.findById(id).map(existing -> {
-            existing.setDate(updated.getDate());
-            existing.setAmount(updated.getAmount());
-            return collectionsRepo.save(existing);
-        }).orElse(null);
+        return service.update(id, updated);
     }
 
-    // Delete record
     @DeleteMapping("/{id}")
     public boolean delete(@PathVariable String id) {
-        if (collectionsRepo.existsById(id)) {
-            collectionsRepo.deleteById(id);
-            return true;
-        }
-        return false;
+        return service.delete(id);
     }
 }

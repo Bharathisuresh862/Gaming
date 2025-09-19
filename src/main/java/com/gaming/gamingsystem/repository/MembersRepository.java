@@ -2,9 +2,9 @@ package com.gaming.gamingsystem.repository;
 
 import com.gaming.gamingsystem.entities.Members;
 import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.stereotype.Repository;
+import java.util.Optional;
 
-@Repository
 public interface MembersRepository extends MongoRepository<Members, String> {
-    // custom queries can be added here later
+    Optional<Members> findByPhone(String phone);
+    Optional<Members> findByMemberId(String memberId);
 }

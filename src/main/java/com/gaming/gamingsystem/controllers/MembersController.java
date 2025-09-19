@@ -1,58 +1,38 @@
 package com.gaming.gamingsystem.controllers;
 
+import com.gaming.gamingsystem.dto.MemberProfileDTO;
 import com.gaming.gamingsystem.entities.Members;
-import com.gaming.gamingsystem.repository.MembersRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.gaming.gamingsystem.services.MembersService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.List;
 
 @RestController
-@RequestMapping("/members")
 public class MembersController {
+    private final MembersService service;
+    public MembersController(MembersService service){ this.service = service; }
 
-    @Autowired
-    private MembersRepository membersRepo;
+    @PostMapping("/members")
+    public ResponseEntity<Members> create(@RequestBody Members m) { return ResponseEntity.ok(service.create(m)); }
 
-    // Create new member
-    @PostMapping
-    public Members create(@RequestBody Members member) {
-        member.setId(null); // let MongoDB generate _id
-        return membersRepo.save(member);
-    }
+    @GetMapping("/members")
+    public List<Members> all(){ return service.findAll(); }
 
-    // Get all members
-    @GetMapping
-    public List<Members> getAll() {
-        return membersRepo.findAll();
-    }
+    @GetMapping("/members/{id}")
+    public ResponseEntity<Members> get(@PathVariable String id){ return ResponseEntity.ok(service.findById(id)); }
 
-    // Get by id
-    @GetMapping("/{id}")
-    public Members getById(@PathVariable String id) {
-        return membersRepo.findById(id).orElse(null);
-    }
+    @PutMapping("/members/{id}")
+    public ResponseEntity<Members> update(@PathVariable String id, @RequestBody Members m){ return ResponseEntity.ok(service.update(id,m)); }
 
-    // Update member
-    @PutMapping("/{id}")
-    public Members update(@PathVariable String id, @RequestBody Members updated) {
-        return membersRepo.findById(id).map(existing -> {
-            existing.setMemberId(updated.getMemberId());
-            existing.setName(updated.getName());
-            existing.setPhone(updated.getPhone());
-            existing.setBalance(updated.getBalance());
-            existing.setJoiningDate(updated.getJoiningDate());
-            return membersRepo.save(existing);
-        }).orElse(null);
-    }
+    @DeleteMapping("/members/{id}")
+    public ResponseEntity<Void> delete(@PathVariable String id){ service.delete(id); return ResponseEntity.noContent().build(); }
 
-    // Delete member
-    @DeleteMapping("/{id}")
-    public boolean delete(@PathVariable String id) {
-        if (membersRepo.existsById(id)) {
-            membersRepo.deleteById(id);
-            return true;
-        }
-        return false;
+    // POST /members/search  { "phone": "9876543210" }
+    @PostMapping("/members/search")
+    public ResponseEntity<MemberProfileDTO> searchByPhone(@RequestBody Map<String,String> body){
+        String phone = body.get("phone");
+        return ResponseEntity.ok(service.searchByPhone(phone));
     }
 }

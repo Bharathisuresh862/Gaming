@@ -1,59 +1,32 @@
 package com.gaming.gamingsystem.controllers;
 
 import com.gaming.gamingsystem.entities.Transactions;
-import com.gaming.gamingsystem.repository.TransactionsRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.gaming.gamingsystem.services.TransactionsService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
+import java.util.Map;
 import java.util.List;
 
 @RestController
-@RequestMapping("/transactions")
 public class TransactionsController {
+    private final TransactionsService service;
+    public TransactionsController(TransactionsService service){ this.service = service; }
 
-    @Autowired
-    private TransactionsRepository transactionsRepo;
-
-    // Create new transaction
-    @PostMapping
-    public Transactions create(@RequestBody Transactions tx) {
-        tx.setId(null); // Let MongoDB generate ID
-        tx.setDateTime(new Date()); // auto set current dateTime
-        return transactionsRepo.save(tx);
+    // POST /play  { "member_id":"...", "game_id":"..." }
+    @PostMapping("/play")
+    public ResponseEntity<String> play(@RequestBody Map<String,String> body){
+        String memberId = body.get("member_id");
+        String gameId = body.get("game_id");
+        return ResponseEntity.ok(service.playGame(memberId, gameId));
     }
 
-    // Get all transactions
-    @GetMapping
-    public List<Transactions> findAll() {
-        return transactionsRepo.findAll();
-    }
+    @GetMapping("/transactions/member/{memberId}")
+    public List<Transactions> byMember(@PathVariable String memberId){ return service.findByMember(memberId); }
 
-    // Get transaction by ID
-    @GetMapping("/{id}")
-    public Transactions findById(@PathVariable String id) {
-        return transactionsRepo.findById(id).orElse(null);
-    }
-
-    // Get transactions by memberId
-    @GetMapping("/member/{memberId}")
-    public List<Transactions> findByMemberId(@PathVariable String memberId) {
-        return transactionsRepo.findByMemberId(memberId);
-    }
-
-    // Get transactions by gameId
-    @GetMapping("/game/{gameId}")
-    public List<Transactions> findByGameId(@PathVariable String gameId) {
-        return transactionsRepo.findByGameId(gameId);
-    }
-
-    // Delete transaction by ID
-    @DeleteMapping("/{id}")
-    public boolean delete(@PathVariable String id) {
-        if (transactionsRepo.existsById(id)) {
-            transactionsRepo.deleteById(id);
-            return true;
-        }
-        return false;
+    @GetMapping("/transactions/range")
+    public List<Transactions> range(@RequestParam long fromMillis, @RequestParam long toMillis){
+        return service.findByDateRange(new Date(fromMillis), new Date(toMillis));
     }
 }

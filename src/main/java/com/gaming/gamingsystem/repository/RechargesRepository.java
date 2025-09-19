@@ -2,9 +2,10 @@ package com.gaming.gamingsystem.repository;
 
 import com.gaming.gamingsystem.entities.Recharges;
 import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.stereotype.Repository;
+import java.util.Date;
+import java.util.List;
 
-@Repository
 public interface RechargesRepository extends MongoRepository<Recharges, String> {
-    // custom queries if needed
+    List<Recharges> findByMemberId(String memberId);
+    List<Recharges> findByDateTimeBetween(Date from, Date to);
 }
